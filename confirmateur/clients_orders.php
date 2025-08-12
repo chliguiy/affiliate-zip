@@ -152,23 +152,6 @@ if (count($client_emails) > 0) {
                         <small><?php echo htmlspecialchars($affiliate['email']); ?><?php if ($affiliate['phone']) echo ' | ' . htmlspecialchars($affiliate['phone']); ?><?php if ($affiliate['city']) echo ' | ' . htmlspecialchars($affiliate['city']); ?></small>
                     </div>
                     <div class="card-body">
-                        <?php
-                        // Calcul des totaux par statut pour cet affilié
-                        $status_counts = [];
-                        foreach ($affiliate_orders[$affiliate['id']] as $order) {
-                            $status = trim(strtolower($order['status'] ?? ''));
-                            if (!isset($status_counts[$status])) $status_counts[$status] = 0;
-                            $status_counts[$status]++;
-                        }
-                        ?>
-                        <div class="mb-3">
-                            <?php foreach ($status_translations as $status_key => $status_label):
-                                if (!empty($status_counts[$status_key])): ?>
-                                <span class="badge rounded-pill bg-<?php echo $status_badges[$status_key] ?? 'secondary'; ?> me-2 mb-1">
-                                    <?php echo $status_label; ?> : <?php echo $status_counts[$status_key]; ?>
-                                </span>
-                            <?php endif; endforeach; ?>
-                        </div>
                         <!-- Liste simple et efficace des statuts de commandes -->
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">

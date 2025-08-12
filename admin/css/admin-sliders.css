@@ -3,29 +3,4 @@ li.active > a {
     background: #2563eb !important;
     font-weight: bold;
     border-radius: 5px;
-}
-
-/* Sidebar admin fixe (cible la classe exacte du HTML) */
-.admin-sidebar {
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 280px;
-    background: #2c3e50;
-    z-index: 1000;
-    overflow-y: auto;
-    border-right: 1px solid #eee;
-}
-
-/* Décaler le contenu principal pour ne pas passer sous la sidebar */
-.admin-content {
-    margin-left: 295px;
-    padding: 48px 20px 20px 0; /* 48px en haut pour l'alignement avec le header sidebar */
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    margin-top: 0 !important;
-    padding-top: 48px !important;
 } 

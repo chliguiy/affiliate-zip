@@ -213,266 +213,265 @@ include_once '../config/database.php';
     </style>
 </head>
 <body>
-    <?php include 'includes/sidebar.php'; ?>
-    <div class="admin-content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Gestion des Admins</h2>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAdminModal">
-                Ajouter un Admin
-            </button>
-        </div>
-        <div class="mb-3">
-            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un admin...">
-        </div>
-        <table class="table table-striped table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>#</th>
-                    <th>Nom</th>
-                    <th>Email</th>
-                    <th>Rôle</th>
-                    <th>Date de création</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="adminsTableBody">
-            <?php foreach ($admins as $admin): ?>
-                <tr>
-                    <td><?= htmlspecialchars($admin['id']) ?></td>
-                    <td><?= htmlspecialchars($admin['full_name']) ?></td>
-                    <td><?= htmlspecialchars($admin['email']) ?></td>
-                    <td><?= htmlspecialchars($admin['role']) ?></td>
-                    <td><?= htmlspecialchars($admin['created_at']) ?></td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-warning edit-btn" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#editAdminModal"
-                                data-id="<?= $admin['id'] ?>"
-                                data-username="<?= htmlspecialchars($admin['username'] ?? '') ?>"
-                                data-full_name="<?= htmlspecialchars($admin['full_name'] ?? '') ?>"
-                                data-email="<?= htmlspecialchars($admin['email'] ?? '') ?>"
-                                data-role="<?= htmlspecialchars($admin['role'] ?? '') ?>"
-                                data-permissions='<?= htmlspecialchars($admin['permissions'] ?? '[]', ENT_QUOTES, 'UTF-8') ?>'>
-                            Modifier
-                        </button>
-                        <button type="button" class="btn btn-sm btn-danger delete-btn" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#deleteAdminModal" 
-                                data-id="<?= $admin['id'] ?>">
-                            Supprimer
-                        </button>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Gestion des Admins</h2>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+            Ajouter un Admin
+        </button>
     </div>
+    <div class="mb-3">
+        <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un admin...">
+    </div>
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Date de création</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="adminsTableBody">
+        <?php foreach ($admins as $admin): ?>
+            <tr>
+                <td><?= htmlspecialchars($admin['id']) ?></td>
+                <td><?= htmlspecialchars($admin['full_name']) ?></td>
+                <td><?= htmlspecialchars($admin['email']) ?></td>
+                <td><?= htmlspecialchars($admin['role']) ?></td>
+                <td><?= htmlspecialchars($admin['created_at']) ?></td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-warning edit-btn" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#editAdminModal"
+                            data-id="<?= $admin['id'] ?>"
+                            data-username="<?= htmlspecialchars($admin['username'] ?? '') ?>"
+                            data-full_name="<?= htmlspecialchars($admin['full_name'] ?? '') ?>"
+                            data-email="<?= htmlspecialchars($admin['email'] ?? '') ?>"
+                            data-role="<?= htmlspecialchars($admin['role'] ?? '') ?>"
+                            data-permissions='<?= htmlspecialchars($admin['permissions'] ?? '[]', ENT_QUOTES, 'UTF-8') ?>'>
+                        Modifier
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger delete-btn" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#deleteAdminModal" 
+                            data-id="<?= $admin['id'] ?>">
+                        Supprimer
+                    </button>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
 
-    <!-- Add Admin Modal -->
-    <div class="modal fade" id="addAdminModal" tabindex="-1" aria-labelledby="addAdminModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addAdminModalLabel">Ajouter un Administrateur</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="manage_admins.php" method="POST">
-                        <input type="hidden" name="action" value="add">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Nom d'utilisateur</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
+<!-- Add Admin Modal -->
+<div class="modal fade" id="addAdminModal" tabindex="-1" aria-labelledby="addAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAdminModalLabel">Ajouter un Administrateur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="manage_admins.php" method="POST">
+                    <input type="hidden" name="action" value="add">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Nom Complet</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Rôle</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="viewer">Viewer</option>
+                            <option value="manager">Manager</option>
+                            <option value="admin">Admin</option>
+                            <option value="super_admin">Super Admin</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Permissions</label>
+                        <div class="permissions-group">
+                            <?php foreach ($available_permissions as $perm => $label): ?>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="permissions[]" value="<?= $perm ?>" id="perm_<?= $perm ?>">
+                                    <label class="form-check-label" for="perm_<?= $perm ?>"><?= $label ?></label>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                        <div class="mb-3">
-                            <label for="full_name" class="form-label">Nom Complet</label>
-                            <input type="text" class="form-control" id="full_name" name="full_name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Mot de passe</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="role" class="form-label">Rôle</label>
-                            <select class="form-select" id="role" name="role" required>
-                                <option value="viewer">Viewer</option>
-                                <option value="manager">Manager</option>
-                                <option value="admin">Admin</option>
-                                <option value="super_admin">Super Admin</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Permissions</label>
-                            <div class="permissions-group">
-                                <?php foreach ($available_permissions as $perm => $label): ?>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="permissions[]" value="<?= $perm ?>" id="perm_<?= $perm ?>">
-                                        <label class="form-check-label" for="perm_<?= $perm ?>"><?= $label ?></label>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Ajouter</button>
-                    </form>
-                </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Edit Admin Modal -->
-    <div class="modal fade" id="editAdminModal" tabindex="-1" aria-labelledby="editAdminModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editAdminModalLabel">Modifier l'Administrateur</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="manage_admins.php" method="POST">
-                        <input type="hidden" name="action" value="edit">
-                        <input type="hidden" name="id" id="edit_admin_id">
-                        <div class="mb-3">
-                            <label for="edit_username" class="form-label">Nom d'utilisateur</label>
-                            <input type="text" class="form-control" id="edit_username" name="username" required>
+<!-- Edit Admin Modal -->
+<div class="modal fade" id="editAdminModal" tabindex="-1" aria-labelledby="editAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAdminModalLabel">Modifier l'Administrateur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="manage_admins.php" method="POST">
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="id" id="edit_admin_id">
+                    <div class="mb-3">
+                        <label for="edit_username" class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" id="edit_username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_full_name" class="form-label">Nom Complet</label>
+                        <input type="text" class="form-control" id="edit_full_name" name="full_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="edit_email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_password" class="form-label">Nouveau Mot de passe (laisser vide pour ne pas changer)</label>
+                        <input type="password" class="form-control" id="edit_password" name="password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_role" class="form-label">Rôle</label>
+                        <select class="form-select" id="edit_role" name="role" required>
+                            <option value="viewer">Viewer</option>
+                            <option value="manager">Manager</option>
+                            <option value="admin">Admin</option>
+                            <option value="super_admin">Super Admin</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Permissions</label>
+                        <div id="edit_permissions" class="permissions-group">
+                            <?php foreach ($available_permissions as $perm => $label): ?>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="permissions[]" value="<?= $perm ?>" id="edit_perm_<?= $perm ?>">
+                                    <label class="form-check-label" for="edit_perm_<?= $perm ?>"><?= $label ?></label>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                        <div class="mb-3">
-                            <label for="edit_full_name" class="form-label">Nom Complet</label>
-                            <input type="text" class="form-control" id="edit_full_name" name="full_name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="edit_email" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_password" class="form-label">Nouveau Mot de passe (laisser vide pour ne pas changer)</label>
-                            <input type="password" class="form-control" id="edit_password" name="password">
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit_role" class="form-label">Rôle</label>
-                            <select class="form-select" id="edit_role" name="role" required>
-                                <option value="viewer">Viewer</option>
-                                <option value="manager">Manager</option>
-                                <option value="admin">Admin</option>
-                                <option value="super_admin">Super Admin</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Permissions</label>
-                            <div id="edit_permissions" class="permissions-group">
-                                <?php foreach ($available_permissions as $perm => $label): ?>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="permissions[]" value="<?= $perm ?>" id="edit_perm_<?= $perm ?>">
-                                        <label class="form-check-label" for="edit_perm_<?= $perm ?>"><?= $label ?></label>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-                    </form>
-                </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Delete Admin Modal -->
-    <div class="modal fade" id="deleteAdminModal" tabindex="-1" aria-labelledby="deleteAdminModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteAdminModalLabel">Supprimer l'Administrateur</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Êtes-vous sûr de vouloir supprimer cet administrateur ? Cette action est irréversible.</p>
-                    <form action="manage_admins.php" method="POST">
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id" id="delete_admin_id">
-                        <div class="d-flex justify-content-end">
-                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-danger">Supprimer</button>
-                        </div>
-                    </form>
-                </div>
+<!-- Delete Admin Modal -->
+<div class="modal fade" id="deleteAdminModal" tabindex="-1" aria-labelledby="deleteAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteAdminModalLabel">Supprimer l'Administrateur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cet administrateur ? Cette action est irréversible.</p>
+                <form action="manage_admins.php" method="POST">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="id" id="delete_admin_id">
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Bootstrap JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Edit Admin Modal
-        const editAdminModal = document.getElementById('editAdminModal');
-        editAdminModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-id');
-            const username = button.getAttribute('data-username');
-            const fullName = button.getAttribute('data-full_name');
-            const email = button.getAttribute('data-email');
-            const role = button.getAttribute('data-role');
-            const permissions = JSON.parse(button.getAttribute('data-permissions'));
+<!-- Bootstrap JS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Edit Admin Modal
+    const editAdminModal = document.getElementById('editAdminModal');
+    editAdminModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const id = button.getAttribute('data-id');
+        const username = button.getAttribute('data-username');
+        const fullName = button.getAttribute('data-full_name');
+        const email = button.getAttribute('data-email');
+        const role = button.getAttribute('data-role');
+        const permissions = JSON.parse(button.getAttribute('data-permissions'));
 
-            const modal = this;
-            modal.querySelector('#edit_admin_id').value = id;
-            modal.querySelector('#edit_username').value = username;
-            modal.querySelector('#edit_full_name').value = fullName;
-            modal.querySelector('#edit_email').value = email;
-            modal.querySelector('#edit_role').value = role;
+        const modal = this;
+        modal.querySelector('#edit_admin_id').value = id;
+        modal.querySelector('#edit_username').value = username;
+        modal.querySelector('#edit_full_name').value = fullName;
+        modal.querySelector('#edit_email').value = email;
+        modal.querySelector('#edit_role').value = role;
 
-            // Reset all checkboxes
-            modal.querySelectorAll('#edit_permissions input[type="checkbox"]').forEach(function(checkbox) {
-                checkbox.checked = false;
+        // Reset all checkboxes
+        modal.querySelectorAll('#edit_permissions input[type="checkbox"]').forEach(function(checkbox) {
+            checkbox.checked = false;
+        });
+        
+        // Check permissions
+        if (permissions) {
+            permissions.forEach(function(permission) {
+                const checkbox = modal.querySelector('#edit_perm_' + permission);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
             });
-            
-            // Check permissions
-            if (permissions) {
-                permissions.forEach(function(permission) {
-                    const checkbox = modal.querySelector('#edit_perm_' + permission);
-                    if (checkbox) {
-                        checkbox.checked = true;
-                    }
-                });
-            }
-        });
-
-        // Delete Admin Modal
-        const deleteAdminModal = document.getElementById('deleteAdminModal');
-        deleteAdminModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-id');
-            this.querySelector('#delete_admin_id').value = id;
-        });
-
-        // Search functionality
-        const searchInput = document.getElementById('searchInput');
-        const tableBody = document.getElementById('adminsTableBody');
-        const rows = tableBody.getElementsByTagName('tr');
-
-        searchInput.addEventListener('keyup', function() {
-            const filter = searchInput.value.toLowerCase();
-            for (let i = 0; i < rows.length; i++) {
-                let cells = rows[i].getElementsByTagName('td');
-                let found = false;
-                for (let j = 0; j < cells.length; j++) {
-                    if (cells[j]) {
-                        if (cells[j].innerHTML.toLowerCase().indexOf(filter) > -1) {
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if (found) {
-                    rows[i].style.display = "";
-                } else {
-                    rows[i].style.display = "none";
-                }
-            }
-        });
+        }
     });
-    </script>
+
+    // Delete Admin Modal
+    const deleteAdminModal = document.getElementById('deleteAdminModal');
+    deleteAdminModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const id = button.getAttribute('data-id');
+        this.querySelector('#delete_admin_id').value = id;
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const tableBody = document.getElementById('adminsTableBody');
+    const rows = tableBody.getElementsByTagName('tr');
+
+    searchInput.addEventListener('keyup', function() {
+        const filter = searchInput.value.toLowerCase();
+        for (let i = 0; i < rows.length; i++) {
+            let cells = rows[i].getElementsByTagName('td');
+            let found = false;
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j]) {
+                    if (cells[j].innerHTML.toLowerCase().indexOf(filter) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (found) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    });
+});
+</script>
 </body>
 </html>
 <?php

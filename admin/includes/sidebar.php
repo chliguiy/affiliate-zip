@@ -119,6 +119,29 @@ $menu_items = [
         'permission' => 'canViewReports',
     ],
     [
+        'label' => 'Les paiements',
+        'icon' => 'fas fa-dollar-sign me-2',
+        'permission' => 'canViewReports',
+        'submenu' => [
+            [
+                'href' => 'invoices.php',
+                'icon' => 'fas fa-file-invoice me-2',
+                'label' => 'Les factures',
+            ],
+            [
+                'href' => 'payments_received.php',
+                'icon' => 'fas fa-money-bill-wave me-2',
+                'label' => 'Paiements Reçu',
+            ],
+            [
+                'href' => 'payments_returned.php',
+                'icon' => 'fas fa-undo me-2',
+                'label' => 'Paiements Retour',
+            ],
+        ],
+        'active_pages' => ['invoices.php', 'payments_received.php', 'payments_returned.php'],
+    ],
+    [
         'href' => '../logout.php',
         'icon' => 'fas fa-sign-out-alt me-2',
         'label' => 'Déconnexion',
@@ -128,6 +151,52 @@ $menu_items = [
 ?>
 
 <style>
+    /* Bouton menu mobile */
+    .mobile-menu-btn {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1001;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-menu-btn:hover {
+        background: #1d4ed8;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    }
+    
+    .mobile-menu-btn:active {
+        transform: translateY(0);
+    }
+    
+    /* Overlay pour mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar-overlay.active {
+        opacity: 1;
+    }
+
     .admin-sidebar {
         position: fixed;
         top: 0;
@@ -138,6 +207,35 @@ $menu_items = [
         color: #ecf0f1;
         padding: 1rem 0;
         z-index: 1000;
+        overflow-y: auto;
+        overflow-x: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    /* Styles pour la barre de défilement */
+    .admin-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .admin-sidebar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+    
+    .admin-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(37, 99, 235, 0.5);
+        border-radius: 3px;
+        transition: background 0.3s ease;
+    }
+    
+    .admin-sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(37, 99, 235, 0.7);
+    }
+    
+    /* Pour Firefox */
+    .admin-sidebar {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(37, 99, 235, 0.5) rgba(255, 255, 255, 0.1);
     }
 
     .admin-sidebar .nav-link {
@@ -149,7 +247,6 @@ $menu_items = [
 
     .admin-sidebar .nav-link:hover,
     .admin-sidebar .nav-link.active {
-        
         opacity: 1;
         background: rgba(255, 255, 255, 0.1);
     }
@@ -203,13 +300,89 @@ $menu_items = [
         font-weight: bold;
         border-radius: 5px;
     }
+    
+    /* Styles responsive */
+    @media (max-width: 768px) {
+        .mobile-menu-btn {
+            display: block;
+        }
+        
+        .admin-sidebar {
+            transform: translateX(-100%);
+        }
+        
+        .admin-sidebar.mobile-open {
+            transform: translateX(0);
+        }
+        
+        .sidebar-overlay {
+            display: block;
+        }
+        
+        /* Ajuster le contenu principal pour mobile */
+        .admin-content {
+            margin-left: 0 !important;
+            padding-top: 80px !important;
+        }
+    }
+    
+    /* Desktop styles - garder le sidebar fixe */
+    @media (min-width: 769px) {
+        .admin-sidebar {
+            transform: translateX(0) !important;
+        }
+    }
+    
     .admin-content {
-        margin-left: 280px;
+        margin-left: 265px;
+    }
+
+    /* Appliquer automatiquement la marge à gauche au contenu principal après le sidebar */
+    .admin-sidebar ~ .container,
+    .admin-sidebar ~ .container-fluid {
+        margin-left: 265px;
+    }
+
+    /* Marges pour les colonnes principales dans la même ligne */
+    .admin-sidebar ~ .col-md-9,
+    .admin-sidebar ~ .col-lg-10 {
+        margin-left: 265px;
+    }
+
+    /* Éviter les décalages supplémentaires à l'intérieur des lignes bootstrap */
+    .admin-sidebar ~ .container .row,
+    .admin-sidebar ~ .container-fluid .row {
+        margin-left: 0;
+    }
+
+    /* Mobile override */
+    @media (max-width: 768px) {
+        .admin-sidebar ~ .container,
+        .admin-sidebar ~ .container-fluid {
+            margin-left: 0 !important;
+            padding-top: 80px !important;
+        }
+        .admin-sidebar ~ .col-md-9,
+        .admin-sidebar ~ .col-lg-10 {
+            margin-left: 0 !important;
+            padding-top: 80px !important;
+        }
     }
 </style>
 
-<div class="admin-sidebar">
-    <h4 class="mb-4">Admin Panel</h4>
+<!-- Bouton menu mobile -->
+<button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- Overlay pour mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="admin-sidebar" id="adminSidebar">
+    <div class="admin-header">
+        <h1>Admin Panel</h1>
+        <p>Gestion du système</p>
+    </div>
     <ul class="nav flex-column">
         <?php foreach ($menu_items as $item): ?>
             <?php
@@ -244,3 +417,61 @@ $menu_items = [
         <?php endforeach; ?>
     </ul>
 </div> 
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.getElementById('adminSidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    // Fonction pour ouvrir le menu mobile
+    function openMobileMenu() {
+        sidebar.classList.add('mobile-open');
+        sidebarOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Empêcher le scroll
+    }
+    
+    // Fonction pour fermer le menu mobile
+    function closeMobileMenu() {
+        sidebar.classList.remove('mobile-open');
+        sidebarOverlay.classList.remove('active');
+        document.body.style.overflow = ''; // Restaurer le scroll
+    }
+    
+    // Événements pour le bouton menu
+    mobileMenuBtn.addEventListener('click', function() {
+        if (sidebar.classList.contains('mobile-open')) {
+            closeMobileMenu();
+        } else {
+            openMobileMenu();
+        }
+    });
+    
+    // Fermer le menu en cliquant sur l'overlay
+    sidebarOverlay.addEventListener('click', closeMobileMenu);
+    
+    // Fermer le menu en appuyant sur Échap
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar.classList.contains('mobile-open')) {
+            closeMobileMenu();
+        }
+    });
+    
+    // Fermer le menu quand on clique sur un lien (mobile seulement)
+    const sidebarLinks = sidebar.querySelectorAll('.nav-link');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                closeMobileMenu();
+            }
+        });
+    });
+    
+    // Gérer le redimensionnement de la fenêtre
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            closeMobileMenu();
+        }
+    });
+});
+</script> 

@@ -44,7 +44,7 @@ if (!isset($_SESSION['admin_id'])) {
 </head>
 <body>
     <?php include 'includes/sidebar.php'; ?>
-    <div class="container-fluid" style="margin-left:280px; min-height:100vh;">
+    <div class="container-fluid" style="margin-left:265px; min-height:100vh;">
         <div class="message-container">
             <h3 class="mb-4"><i class="fas fa-envelope me-2"></i>Nouveau Message</h3>
             <form method="post" action="">

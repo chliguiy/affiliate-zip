@@ -11,14 +11,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     switch ($_POST['action']) {
         case 'refresh_orders':
             try {
-                $stmt = $conn->prepare("SELECT * FROM orders WHERE status IN ('processing', 'shipped') AND tracking_number IS NOT NULL");
+                $stmt = $conn->prepare("SELECT * FROM orders WHERE status IN ('processing', 'shipped') AND delivery_number IS NOT NULL");
                 $stmt->execute();
                 $orders = $stmt->fetchAll();
 
                 foreach ($orders as $order) {
                     try {
-                        $trackingNumber = $order['tracking_number'];
-                        $responseJson = $apiDelivery->getParcel($trackingNumber);
+                        $deliveryNumber = $order['delivery_number'];
+                        $responseJson = $apiDelivery->getParcel($deliveryNumber);
                         $response = json_decode($responseJson, true);
 
                         if ($response && isset($response['staus_name'])) {
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                 $stmtUpdate->execute([$newStatus, $order['id']]);
                             }
                         } else {
-                            throw new Exception("Réponse API invalide pour le colis: " . $trackingNumber);
+                            throw new Exception("Réponse API invalide pour le colis: " . $deliveryNumber);
                         }
                     } catch (Exception $e) {
                         error_log("Erreur sur la commande ID {$order['id']}: " . $e->getMessage());
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                                 $trackingNum = $response['original']['tracking_num'] ?? null;
 
                                 if ($trackingNum) {
-                                    $stmtUpdate = $conn->prepare("UPDATE orders SET status = 'processing', tracking_number = ? WHERE id = ?");
+                                    $stmtUpdate = $conn->prepare("UPDATE orders SET status = 'processing', delivery_number = ? WHERE id = ?");
                                     $stmtUpdate->execute([$trackingNum, $order_id]);
                                 } else {
                                     throw new Exception("Numéro de suivi manquant dans la réponse API.");
@@ -169,22 +169,41 @@ $orders = $conn->query($query)->fetchAll();
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Gestion des commandes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des commandes - Administration</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .content-wrapper {
+            margin-left: 265px;
+            padding: 2rem;
+        }
+        .action-buttons {
+            white-space: nowrap;
+        }
+        @media (max-width: 768px) {
+            .content-wrapper {
+                margin-left: 0 !important;
+                padding: 1rem !important;
+                padding-top: 80px !important;
+            }
+        }
+    </style>
 </head>
 <body>
 <?php include 'includes/sidebar.php'; ?>
-<div class="admin-content">
-    <h1>Gestion des commandes</h1>
+
+<div class="content-wrapper">
+    <h1 class="mb-4">Gestion des commandes</h1>
 
     <?php if (!empty($_SESSION['success_message'])): ?>
-                                <div class="alert alert-success"><?php echo $_SESSION['success_message'];
-                                unset($_SESSION['success_message']); ?></div>
+        <div class="alert alert-success"><?php echo $_SESSION['success_message'];
+        unset($_SESSION['success_message']); ?></div>
     <?php endif; ?>
 
     <?php if (!empty($_SESSION['error_message'])): ?>
-                                <div class="alert alert-danger"><?php echo $_SESSION['error_message'];
-                                unset($_SESSION['error_message']); ?></div>
+        <div class="alert alert-danger"><?php echo $_SESSION['error_message'];
+        unset($_SESSION['error_message']); ?></div>
     <?php endif; ?>
 
     <!-- Filters -->
@@ -193,8 +212,8 @@ $orders = $conn->query($query)->fetchAll();
             <select name="status" class="form-select" onchange="this.form.submit()">
                 <option value="">Tous les statuts</option>
                 <?php foreach (['new', 'unconfirmed', 'confirmed', 'processing', 'shipped', 'delivered', 'returned', 'cancelled'] as $status): ?>
-                                            <option value="<?php echo $status; ?>" <?php if ($status_filter === $status)
-                                                   echo 'selected'; ?>><?php echo ucfirst($status); ?></option>
+                    <option value="<?php echo $status; ?>" <?php if ($status_filter === $status)
+                           echo 'selected'; ?>><?php echo ucfirst($status); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
@@ -202,8 +221,8 @@ $orders = $conn->query($query)->fetchAll();
             <select name="payment" class="form-select" onchange="this.form.submit()">
                 <option value="">Tous les paiements</option>
                 <?php foreach (['pending', 'paid', 'refunded'] as $pay): ?>
-                                            <option value="<?php echo $pay; ?>" <?php if ($payment_filter === $pay)
-                                                   echo 'selected'; ?>><?php echo ucfirst($pay); ?></option>
+                    <option value="<?php echo $pay; ?>" <?php if ($payment_filter === $pay)
+                           echo 'selected'; ?>><?php echo ucfirst($pay); ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
@@ -214,68 +233,66 @@ $orders = $conn->query($query)->fetchAll();
 
     <form method="POST" class="d-inline">
         <input type="hidden" name="action" value="refresh_orders">
-        <button type="submit" class="btn btn-info mb-3">🔄 Rafraîchir les statuts des commandes</button>
+        <button type="submit" class="btn btn-info mb-3">
+            <i class="fas fa-sync-alt"></i> Rafraîchir les statuts des commandes
+        </button>
     </form>
 
     <!-- Orders Table -->
     <form method="POST">
         <input type="hidden" name="action" value="send_delivery">
-        <button type="submit" class="btn btn-success mb-3" id="sendToDeliveryBtn" disabled>Envoyer à la livraison</button>
-        <table class="table table-bordered">
-            <thead>
-            <tr>
-                <th><input type="checkbox" id="selectAll"></th>
-                <th>N°</th>
-                <th>Client</th>
-                <th>Total</th>
-                <th>Commission</th>
-                <th>Articles</th>
-                <th>Statut</th>
-                <th>Paiement</th>
-                <th>Date</th>
-                <th>Affilié</th>
-                <th>Confirmateur</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($orders as $order): ?>
-                                        <tr>
-                                            <td><input type="checkbox" name="order_ids[]" value="<?php echo $order['id']; ?>" class="order-checkbox" <?php echo ($order['status'] === 'confirmed') ? '' : 'disabled'; ?>></td>
-                                            <td><?php echo htmlspecialchars($order['order_number']); ?></td>
-                                            <td><?php echo htmlspecialchars($order['customer_name']); ?><br><small><?php echo htmlspecialchars($order['customer_email']); ?></small></td>
-                                            <td><?php echo number_format($order['final_sale_price'], 2); ?> MAD</td>
-                                            <td><?php echo number_format($order['commission_amount'], 2); ?> MAD</td>
-                                            <td><?php echo $order['items_count']; ?></td>
-                                            <td><span class="badge bg-secondary"><?php echo $order['status']; ?></span></td>
-                                            <td><span class="badge bg-secondary"><?php echo $order['payment_status'] ?? 'N/A'; ?></span></td>
-                                            <td><?php echo date('d/m/Y', strtotime($order['created_at'])); ?></td>
-                                            <td><?php echo htmlspecialchars($order['affiliate_name'] ?? 'N/A'); ?></td>
-                                            <td><?php echo htmlspecialchars($order['confirmateur_nom'] ?? ''); ?></td>
-                                            <td>
-                                                <button type="button" class="btn btn-sm btn-primary view-order-details" data-order-id="<?php echo $order['id']; ?>">Voir</button>
-                                                <button type="button" class="btn btn-sm btn-danger delete-order" data-id="<?php echo $order['id']; ?>">Supprimer</button>
-                                            </td>
-                                        </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
+        <button type="submit" class="btn btn-success mb-3" id="sendToDeliveryBtn" disabled>
+            <i class="fas fa-truck"></i> Envoyer à la livraison
+        </button>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                <tr>
+                    <th><input type="checkbox" id="selectAll"></th>
+                    <th>N°</th>
+                    <th>Client</th>
+                    <th>Total</th>
+                    <th>Commission</th>
+                    <th>Articles</th>
+                    <th>Statut</th>
+                    <th>Paiement</th>
+                    <th>Date</th>
+                    <th>Affilié</th>
+                    <th>Confirmateur</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($orders as $order): ?>
+                    <tr>
+                        <td><input type="checkbox" name="order_ids[]" value="<?php echo $order['id']; ?>" class="order-checkbox" <?php echo ($order['status'] === 'confirmed') ? '' : 'disabled'; ?>></td>
+                        <td><?php echo htmlspecialchars($order['order_number']); ?></td>
+                        <td>
+                            <strong><?php echo htmlspecialchars($order['customer_name']); ?></strong><br>
+                            <small class="text-muted"><?php echo htmlspecialchars($order['customer_email']); ?></small>
+                        </td>
+                        <td><?php echo number_format($order['final_sale_price'], 2); ?> MAD</td>
+                        <td><?php echo number_format($order['commission_amount'], 2); ?> MAD</td>
+                        <td><span class="badge bg-info"><?php echo $order['items_count']; ?></span></td>
+                        <td><span class="badge bg-secondary"><?php echo $order['status']; ?></span></td>
+                        <td><span class="badge bg-secondary"><?php echo $order['payment_status'] ?? 'N/A'; ?></span></td>
+                        <td><?php echo date('d/m/Y', strtotime($order['created_at'])); ?></td>
+                        <td><?php echo htmlspecialchars($order['affiliate_name'] ?? 'N/A'); ?></td>
+                        <td><?php echo htmlspecialchars($order['confirmateur_nom'] ?? ''); ?></td>
+                        <td class="action-buttons">
+                            <a href="order_view.php?id=<?php echo $order['id']; ?>" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> Voir
+                            </a>
+                            <button type="button" class="btn btn-sm btn-danger delete-order" data-id="<?php echo $order['id']; ?>">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </form>
-</div>
-
-<!-- Modale détails commande -->
-<div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="orderDetailsModalLabel">Détails de la commande</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" id="order-details-content">
-        <div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- Bootstrap JS -->
@@ -312,26 +329,6 @@ function updateButton() {
     const hasChecked = Array.from(checkboxes).some(cb => cb.checked);
     sendBtn.disabled = !hasChecked;
 }
-
-// Voir détails commande (modale AJAX)
-document.querySelectorAll('.view-order-details').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        var orderId = this.getAttribute('data-order-id');
-        var modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
-        var content = document.getElementById('order-details-content');
-        content.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
-        fetch('get_order_details.php?id=' + orderId)
-            .then(response => response.text())
-            .then(html => {
-                content.innerHTML = html;
-            })
-            .catch(() => {
-                content.innerHTML = '<div class="alert alert-danger">Erreur lors du chargement des détails.</div>';
-            });
-        modal.show();
-    });
-});
 </script>
 </body>
 </html>

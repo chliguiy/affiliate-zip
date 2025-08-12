@@ -31,7 +31,7 @@ echo "<div class='container-fluid py-4'>";
 echo "<div class='row'>";
 echo "<div class='col-12'>";
 echo "<h1 class='text-center mb-4'>";
-echo "<i class='fas fa-users'></i> Tous les Comptes - SCAR AFFILIATE";
+        echo "<i class='fas fa-users'></i> Tous les Comptes - SCAR AFFILIATE";
 echo "</h1>";
 
 try {

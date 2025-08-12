@@ -181,7 +181,6 @@ try {
         
         $test_client_data = [
             'name' => 'Test Client',
-            'email' => 'test' . time() . '@example.com',
             'phone' => '0612345678',
             'address' => '123 Rue Test',
             'city' => 'Casablanca'

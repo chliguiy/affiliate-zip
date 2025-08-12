@@ -106,6 +106,19 @@
     color: #888;
     font-weight: 400;
 }
+.topbar-affiliate .cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #fc5c7d;
+    color: #fff;
+    font-size: 0.7rem;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+}
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -123,8 +136,6 @@
             </div>
         </div>
     </div>
-        </span>
-    </a>
     <a href="https://youtube.com/" target="_blank" class="icon-btn" title="YouTube"><i class="fab fa-youtube" style="color:#ff5e5e;"></i></a>
     <a href="https://t.me/" target="_blank" class="icon-btn" title="Telegram"><i class="fab fa-telegram-plane" style="color:#4099ff;"></i></a>
     <div class="dropdown" id="dropdownWhatsapp">
@@ -140,6 +151,10 @@
             <a href="https://wa.me/212600000005" target="_blank"><i class="fas fa-lightbulb"></i> Service de creative</a>
         </div>
     </div>
+    <a href="cart.php" class="icon-btn position-relative" title="Panier" id="cartIcon">
+        <i class="fas fa-shopping-cart" style="color:#667eea;"></i>
+        <span class="cart-badge" id="cartBadge">0</span>
+    </a>
     <div class="dropdown" id="dropdownProfile">
         <div class="profile" onclick="event.preventDefault(); this.parentNode.classList.toggle('open');">
             <i class="fas fa-user-circle" style="font-size:1.5rem;"></i>
@@ -164,5 +179,30 @@ window.addEventListener('click', function(e) {
     document.querySelectorAll('.topbar-affiliate .dropdown').forEach(function(drop) {
         if (!drop.contains(e.target)) drop.classList.remove('open');
     });
+});
+
+// Fonction pour mettre à jour le nombre d'articles dans le panier
+function updateCartCount() {
+    fetch('get_cart_count.php')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('cartBadge');
+            if (badge) {
+                badge.textContent = data.count;
+                if (data.count > 0) {
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la récupération du nombre d\'articles:', error);
+        });
+}
+
+// Mettre à jour le nombre d'articles au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartCount();
 });
 </script> 

@@ -56,14 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
             
             case 'activate_selected':
-                if (!empty($_POST['selected_users']) && is_array($_POST['selected_users'])) {
-                    $ids = array_map('intval', $_POST['selected_users']);
-                    if (count($ids) > 0) {
-                        $in = str_repeat('?,', count($ids) - 1) . '?';
-                        $stmt = $conn->prepare("UPDATE users SET status = 'active' WHERE id IN ($in) AND status = 'inactive'");
-                        $stmt->execute($ids);
-                    }
-                }
+                // Activer tous les comptes inactifs, sans tenir compte de la sélection
+                $stmt = $conn->prepare("UPDATE users SET status = 'active' WHERE status = 'inactive'");
+                $stmt->execute();
                 break;
         }
         header('Location: users.php');
@@ -137,8 +132,13 @@ try {
     </style>
 </head>
 <body>
-    <?php include 'includes/sidebar.php'; ?>
-    <div class="admin-content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <?php include 'includes/sidebar.php'; ?>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Gestion des Utilisateurs</h2>
                 </div>
@@ -264,7 +264,7 @@ try {
                                     </tbody>
                                 </table>
                             </div>
-                            <button type="submit" class="btn btn-success mt-2" id="activateSelectedBtn">Activer les comptes inactifs sélectionnés</button>
+                            <button type="submit" class="btn btn-success mt-2" id="activateSelectedBtn" onclick="return confirm('Voulez-vous vraiment activer tous les comptes inactifs ?');">Activer tous les comptes inactifs</button>
                         </form>
                     </div>
                 </div>
@@ -367,5 +367,12 @@ try {
         }
     });
     </script>
+    <script>
+document.getElementById('bulkActivateForm').addEventListener('submit', function() {
+    setTimeout(function() {
+        window.location.reload();
+    }, 500);
+});
+</script>
 </body>
 </html> 

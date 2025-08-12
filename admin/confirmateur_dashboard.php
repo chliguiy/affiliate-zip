@@ -11,14 +11,6 @@ require_once '../config/database.php';
 $database = new Database();
 $pdo = $database->getConnection();
 
-// Initialiser $confirmateur tout de suite
-$stmt = $pdo->prepare('SELECT * FROM equipe WHERE id = ? AND role = "confirmateur"');
-$stmt->execute([$confirmateur_id]);
-$confirmateur = $stmt->fetch();
-if (!$confirmateur) {
-    die('Confirmateur introuvable.');
-}
-
 // Régler un paiement (statut -> paye)
 if (isset($_POST['regler_paiement']) && isset($_POST['paiement_id'])) {
     $paiement_id = (int)$_POST['paiement_id'];
@@ -49,29 +41,13 @@ if ($is_admin && isset($_POST['effectuer_paiement'], $_POST['montant_paiement'])
     }
 }
 
-// Gestion ajout/suppression client assigné (admin seulement)
-if ($is_admin && isset($_POST['add_client_id'])) {
-    $client_id = (int)$_POST['add_client_id'];
-    $stmt = $pdo->prepare("INSERT IGNORE INTO confirmateur_clients (confirmateur_id, client_id, status) VALUES (?, ?, 'active')");
-    $stmt->execute([$confirmateur_id, $client_id]);
-    header('Location: confirmateur_dashboard.php?id=' . $confirmateur_id);
-    exit;
-}
-if ($is_admin && isset($_POST['remove_client_id'])) {
-    $client_id = (int)$_POST['remove_client_id'];
-    $stmt = $pdo->prepare("DELETE FROM confirmateur_clients WHERE confirmateur_id = ? AND client_id = ?");
-    $stmt->execute([$confirmateur_id, $client_id]);
-    header('Location: confirmateur_dashboard.php?id=' . $confirmateur_id);
-    exit;
-}
-// Récupérer les clients assignés (infos complètes)
-$stmt = $pdo->prepare("SELECT u.id, u.username, u.email FROM confirmateur_clients cc JOIN users u ON cc.client_id = u.id WHERE cc.confirmateur_id = ? AND cc.status = 'active'");
+// Infos du confirmateur
+$stmt = $pdo->prepare('SELECT * FROM equipe WHERE id = ? AND role = "confirmateur"');
 $stmt->execute([$confirmateur_id]);
-$clients_assignes = $stmt->fetchAll();
-// Récupérer les affiliés non assignés
-$stmt = $pdo->prepare("SELECT id, username, email FROM users WHERE type = 'affiliate' AND id NOT IN (SELECT client_id FROM confirmateur_clients WHERE confirmateur_id = ? AND status = 'active')");
-$stmt->execute([$confirmateur_id]);
-$affil_non_assignes = $stmt->fetchAll();
+$confirmateur = $stmt->fetch();
+if (!$confirmateur) {
+    die('Confirmateur introuvable.');
+}
 
 // Récupérer les emails des clients assignés à ce confirmateur
 $stmt = $pdo->prepare("SELECT u.email FROM confirmateur_clients cc JOIN users u ON cc.client_id = u.id WHERE cc.confirmateur_id = ? AND cc.status = 'active'");
@@ -88,42 +64,22 @@ if (count($client_emails) > 0) {
 }
 
 // Nouvelle logique :
-// Récupérer les IDs des affiliés assignés à ce confirmateur
-$stmt = $pdo->prepare("SELECT u.id FROM confirmateur_clients cc JOIN users u ON cc.client_id = u.id WHERE cc.confirmateur_id = ? AND cc.status = 'active'");
-$stmt->execute([$confirmateur_id]);
-$affiliate_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-// Calculer les stats via affiliate_id
 $stats = [
-    'livrees' => 0,
-    'confirmees' => 0,
-    'total' => 0,
-    'non_livrees' => 0,
-    'non_confirmees' => 0,
+    'livrees' => 0, // Commandes livrées ET confirmées par ce confirmateur
+    'confirmees' => 0, // Commandes confirmées par ce confirmateur (tous statuts)
+    'total' => 0, // Total des commandes confirmées par ce confirmateur
+    'non_livrees' => 0, // Initialisé à 0
+    'non_confirmees' => 0, // Initialisé à 0
 ];
-if (count($affiliate_ids) > 0) {
-    $in = str_repeat('?,', count($affiliate_ids) - 1) . '?';
-    // Livrées
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE affiliate_id IN ($in) AND status = 'delivered'");
-    $stmt->execute($affiliate_ids);
-    $stats['livrees'] = (int)$stmt->fetchColumn();
-    // Confirmées
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE affiliate_id IN ($in) AND status = 'confirmed'");
-    $stmt->execute($affiliate_ids);
-    $stats['confirmees'] = (int)$stmt->fetchColumn();
-    // Total
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE affiliate_id IN ($in)");
-    $stmt->execute($affiliate_ids);
-    $stats['total'] = (int)$stmt->fetchColumn();
-    // Non livrées
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE affiliate_id IN ($in) AND status != 'delivered'");
-    $stmt->execute($affiliate_ids);
-    $stats['non_livrees'] = (int)$stmt->fetchColumn();
-    // Non confirmées
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE affiliate_id IN ($in) AND status != 'confirmed'");
-    $stmt->execute($affiliate_ids);
-    $stats['non_confirmees'] = (int)$stmt->fetchColumn();
-}
+// Commandes confirmées ET livrées par ce confirmateur
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE confirmateur_id = ? AND status = 'delivered'");
+$stmt->execute([$confirmateur_id]);
+$stats['livrees'] = (int)$stmt->fetchColumn();
+// Commandes confirmées par ce confirmateur (tous statuts)
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM orders WHERE confirmateur_id = ?");
+$stmt->execute([$confirmateur_id]);
+$stats['confirmees'] = (int)$stmt->fetchColumn();
+$stats['total'] = $stats['confirmees'];
 
 // Gain = 8dh * commandes livrées ET confirmées par ce confirmateur
 $gain_total = $stats['livrees'] * 8;
@@ -329,65 +285,32 @@ $hist_paiements = $stmt->fetchAll();
                     </div>
                 </div>
             </div>
-            <!-- Bloc clients assignés -->
-            <div class="card mb-4">
-                <div class="card-header bg-info text-white d-flex align-items-center justify-content-between">
-                    <span><i class="fas fa-users me-2"></i>Clients assignés</span>
-                    <?php if ($is_admin): ?>
-                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addClientModal"><i class="fas fa-plus"></i> Ajouter un client</button>
-                    <?php endif; ?>
+            <div class="card mt-4 mb-4">
+                <div class="card-header bg-info text-white d-flex align-items-center">
+                    <i class="fas fa-users me-2"></i>
+                    <span>Clients assignés</span>
                 </div>
-                <div class="card-body">
+                <div class="card-body bg-light">
                     <div class="row g-3">
-                        <?php foreach ($clients_assignes as $c): ?>
-                            <div class="col-12 col-md-4 col-lg-3">
-                                <div class="p-3 bg-white rounded shadow-sm d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <div class="fw-bold"><?php echo htmlspecialchars($c['username'] ?? $c['email']); ?></div>
-                                        <div class="text-muted small"><?php echo htmlspecialchars($c['email']); ?></div>
-                                    </div>
-                                    <?php if ($is_admin): ?>
-                                    <form method="POST" onsubmit="return confirm('Supprimer ce client assigné ?');" style="margin:0;">
-                                        <input type="hidden" name="remove_client_id" value="<?php echo $c['id']; ?>">
-                                        <button type="submit" class="btn btn-sm btn-danger ms-2"><i class="fas fa-trash"></i></button>
-                                    </form>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                        <?php if (count($clients_assignes) === 0): ?>
-                            <div class="col-12 text-muted">Aucun client assigné.</div>
-                        <?php endif; ?>
+                        <?php
+                        $stmt = $pdo->prepare('SELECT u.id, u.username, u.email FROM confirmateur_clients cc JOIN users u ON cc.client_id = u.id WHERE cc.confirmateur_id = ? AND cc.status = "active" AND u.type = "affiliate"');
+                        $stmt->execute([$confirmateur_id]);
+                        $assigned = $stmt->fetchAll();
+                        if (count($assigned) === 0) {
+                            echo '<div class="col-12 text-muted">Aucun affilié assigné.</div>';
+                        } else {
+                            foreach ($assigned as $a) {
+                                echo '<div class="col-12 col-md-6 col-lg-4">'
+                                    . '<div class="p-3 bg-white rounded shadow-sm d-flex flex-column h-100">'
+                                    . '<span class="fw-bold mb-1">' . htmlspecialchars($a['username']) . '</span>'
+                                    . '<span class="text-secondary small">' . htmlspecialchars($a['email']) . '</span>'
+                                    . '</div>'
+                                    . '</div>';
+                            }
+                        }
+                        ?>
                     </div>
                 </div>
-            </div>
-            <!-- Modale ajout client -->
-            <div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="addClientModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="addClientModalLabel">Ajouter un client affilié</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <form method="POST">
-                    <div class="modal-body">
-                      <div class="mb-3">
-                        <label for="add_client_id" class="form-label">Sélectionner un affilié</label>
-                        <select class="form-select" id="add_client_id" name="add_client_id" required>
-                          <option value="">-- Choisir un affilié --</option>
-                          <?php foreach ($affil_non_assignes as $a): ?>
-                            <option value="<?php echo $a['id']; ?>"><?php echo htmlspecialchars($a['username'] ?? $a['email']); ?> (<?php echo htmlspecialchars($a['email']); ?>)</option>
-                          <?php endforeach; ?>
-                        </select>
-                      </div>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                      <button type="submit" class="btn btn-primary">Ajouter</button>
-                    </div>
-                  </form>
-                </div>
-              </div>
             </div>
             <!-- Progression commandes livrées sur confirmées -->
             <?php
@@ -509,14 +432,13 @@ $hist_paiements = $stmt->fetchAll();
                                 </button>
                             </form>
                             <?php if (isset($paiement_message)) echo $paiement_message; ?>
-                            <!-- Affichage du récapitulatif de paiement -->
-                            <?php if (isset($paiement_recap)) : ?>
-                                <div class="alert alert-info mt-3">
-                                    <strong>Récapitulatif du paiement :</strong><br>
-                                    Montant : <?php echo number_format($paiement_recap['montant'], 2); ?> DH<br>
-                                    Date : <?php echo htmlspecialchars($paiement_recap['date']); ?><br>
-                                    Confirmateur : <?php echo htmlspecialchars($paiement_recap['confirmateur'] ?? 'N/A'); ?>
-                                </div>
+                            <?php if (isset($paiement_recap)): ?>
+                            <div class="alert alert-info mt-2">
+                                <strong>Récapitulatif du paiement :</strong><br>
+                                Montant : <b><?php echo number_format($paiement_recap['montant'], 2); ?> DH</b><br>
+                                Date : <b><?php echo htmlspecialchars($paiement_recap['date']); ?></b><br>
+                                Confirmateur : <b><?php echo htmlspecialchars($paiement_recap['confirmateur']); ?></b>
+                            </div>
                             <?php endif; ?>
                         </div>
                     </div>

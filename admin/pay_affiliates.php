@@ -176,9 +176,14 @@ $affiliates_all = $stmt->fetchAll();
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <?php include 'includes/sidebar.php'; ?>
-    <div class="admin-content">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <?php include 'includes/sidebar.php'; ?>
+            
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">
                         <i class="fas fa-money-bill-wave me-2"></i>
                         <?php echo $page_title; ?>
@@ -382,7 +387,7 @@ $affiliates_all = $stmt->fetchAll();
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
 

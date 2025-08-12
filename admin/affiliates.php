@@ -147,9 +147,14 @@ $logger->log('view', 'affiliates', null, ['ip' => $_SERVER['REMOTE_ADDR']]);
     </style>
 </head>
 <body>
-    <?php include 'includes/sidebar.php'; ?>
-    <div class="admin-content">
-        <h2 class="mb-4">Gestion des Affiliés</h2>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <?php include 'includes/sidebar.php'; ?>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 p-4">
+                <h2 class="mb-4">Gestion des Affiliés</h2>
 
                 <!-- Statistics Cards -->
                 <div class="row mb-4">

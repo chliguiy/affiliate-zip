@@ -7,10 +7,10 @@
 echo "<h1>🚀 Installation de SCAR AFFILIATE</h1>";
 
 // Configuration
- $host = "localhost";
-     $database = "u163515678_affiliate";
-     $username = "u163515678_affiliate";
-     $password = "affiliate@2025@Adnane";
+$host = "localhost";
+$username = "root";
+$password = "";
+$database = "chic_affiliate";
 
 try {
     echo "<h2>1. Connexion à MySQL</h2>";

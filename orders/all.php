@@ -218,10 +218,9 @@ $status_translations = [
                     </td>
                     <td>
                         <div class="btn-group">
-                            <button type="button" class="btn btn-sm btn-info" title="Voir les détails"
-                                    onclick="viewOrder(<?php echo $order['id']; ?>)">
+                            <a href="order_details.php?id=<?php echo $order['id']; ?>" class="btn btn-sm btn-info" title="Voir les détails">
                                 <i class="fas fa-eye"></i>
-                            </button>
+                            </a>
                             <button type="button" class="btn btn-sm btn-primary" title="Modifier"
                                     onclick="editOrder(<?php echo htmlspecialchars(json_encode($order)); ?>)">
                                 <i class="fas fa-edit"></i>
@@ -256,51 +255,54 @@ $status_translations = [
             <div class="modal-body">
                 <form id="editOrderForm">
                     <input type="hidden" id="edit_order_id" name="order_id">
+                    
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="edit_quantity" class="form-label">Quantité</label>
-                            <input type="number" class="form-control" id="edit_quantity" name="quantity" min="1" max="99" required>
+                            <label for="customer_name" class="form-label">Nom du client</label>
+                            <input type="text" class="form-control" id="customer_name" name="customer_name" required placeholder="Ex: Mohamed El Amrani">
                         </div>
                         <div class="col-md-6">
-                            <label for="edit_final_sale_price" class="form-label">Prix de vente final</label>
-                            <input type="number" class="form-control" id="edit_final_sale_price" name="final_sale_price" min="0" step="0.01" required>
+                            <label for="customer_email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="customer_email" name="customer_email" placeholder="Ex: client@email.com">
                         </div>
                     </div>
+
                     <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="customer_phone" class="form-label">Téléphone</label>
+                            <input type="tel" class="form-control" id="customer_phone" name="customer_phone" required pattern="0[5-7][0-9]{8}" placeholder="Ex: 0612345678">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="customer_city" class="form-label">Ville</label>
+                            <input type="text" class="form-control" id="customer_city" name="customer_city" required placeholder="Ex: Casablanca">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="customer_address" class="form-label">Adresse</label>
+                            <input type="text" class="form-control" id="customer_address" name="customer_address" required placeholder="Ex: 123 Rue de Fès, Quartier Maarif">
+                        </div>
                         <div class="col-md-4">
-                            <label for="edit_customer_name" class="form-label">Nom Destinataire (client)</label>
-                            <input type="text" class="form-control" name="customer_name" id="edit_customer_name" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="edit_customer_phone" class="form-label">Numéro téléphone</label>
-                            <input type="text" class="form-control" name="customer_phone" id="edit_customer_phone" pattern="0[6-7][0-9]{8}" placeholder="06/07xxxxxxxx" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="edit_customer_email" class="form-label">Email</label>
-                            <input type="email" class="form-control" name="customer_email" id="edit_customer_email" required>
+                            <label for="postal_code" class="form-label">Code postal</label>
+                            <input type="text" class="form-control" id="postal_code" name="postal_code" placeholder="Ex: 20000">
                         </div>
                     </div>
+
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="edit_customer_city" class="form-label">Ville</label>
-                            <input type="text" class="form-control" name="customer_city" id="edit_customer_city" required>
+                            <label for="shipping_method" class="form-label">Mode de livraison</label>
+                            <input type="text" class="form-control" id="shipping_method" name="shipping_method" placeholder="Ex: Amana, Chronopost, ...">
                         </div>
                         <div class="col-md-6">
-                            <label for="edit_delivery_fee" class="form-label">Tarif de Livraison</label>
-                            <input type="number" class="form-control" name="delivery_fee" id="edit_delivery_fee" min="0" step="0.01" required>
+                            <label for="payment_method" class="form-label">Mode de paiement</label>
+                            <input type="text" class="form-control" id="payment_method" name="payment_method" placeholder="Ex: Espèces, Carte bancaire, ...">
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <label for="edit_customer_address" class="form-label">Adresse de livraison</label>
-                            <textarea class="form-control" name="customer_address" id="edit_customer_address" rows="2" required></textarea>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <label for="edit_comment" class="form-label">Commentaire</label>
-                            <textarea class="form-control" name="comment" id="edit_comment" rows="2"></textarea>
-                        </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Notes supplémentaires pour la commande"></textarea>
                     </div>
                 </form>
             </div>
@@ -405,15 +407,15 @@ function deleteOrder(orderId) {
 function editOrder(order) {
     // Remplir le formulaire avec les données de la commande
     document.getElementById('edit_order_id').value = order.id;
-    document.getElementById('edit_quantity').value = order.quantity;
-    document.getElementById('edit_final_sale_price').value = order.final_sale_price;
-    document.getElementById('edit_customer_name').value = order.customer_name;
-    document.getElementById('edit_customer_phone').value = order.customer_phone;
-    document.getElementById('edit_customer_email').value = order.customer_email || '';
-    document.getElementById('edit_customer_city').value = order.customer_city || '';
-    document.getElementById('edit_delivery_fee').value = order.delivery_fee || 0;
-    document.getElementById('edit_customer_address').value = order.customer_address;
-    document.getElementById('edit_comment').value = order.comment || '';
+    document.getElementById('customer_name').value = order.customer_name;
+    document.getElementById('customer_email').value = order.customer_email || '';
+    document.getElementById('customer_phone').value = order.customer_phone;
+    document.getElementById('customer_address').value = order.customer_address;
+    document.getElementById('customer_city').value = order.customer_city || '';
+    document.getElementById('postal_code').value = order.postal_code || '';
+    document.getElementById('shipping_method').value = order.shipping_method || '';
+    document.getElementById('payment_method').value = order.payment_method || '';
+    document.getElementById('notes').value = order.notes || '';
 
     // Afficher le modal
     new bootstrap.Modal(document.getElementById('editOrderModal')).show();

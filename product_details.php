@@ -432,6 +432,13 @@ try {
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
+                
+                <!-- Bouton Importer les images -->
+                <div class="mt-3 mb-4">
+                    <button type="button" class="btn btn-outline-primary w-100" onclick="importImages()">
+                        <i class="fas fa-images me-2"></i>Importer les images
+                    </button>
+                </div>
             </div>
 
             <div class="col-md-6">
@@ -559,22 +566,17 @@ try {
                                 </div>
                             </div>
 
-                            <!-- Deuxième ligne : Nom client, Téléphone, Email -->
+                            <!-- Deuxième ligne : Nom client, Téléphone -->
                             <div class="row mb-3">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label for="customer_name" class="form-label">Nom Destinataire (client)</label>
                                     <input type="text" class="form-control" name="customer_name" id="customer_name"
                                         required>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label for="customer_phone" class="form-label">Numéro téléphone</label>
                                     <input type="text" class="form-control" name="customer_phone" id="customer_phone"
                                         pattern="0[6-7][0-9]{8}" placeholder="06/07xxxxxxxx" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="customer_email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" name="customer_email" id="customer_email"
-                                        required>
                                 </div>
                             </div>
 
@@ -625,8 +627,19 @@ try {
 
                             <input type="hidden" name="color_id" id="selectedColor">
                             <input type="hidden" name="size_id" id="selectedSize">
-                            <button type="submit" class="add-to-cart-btn"><i
-                                    class="fas fa-shopping-cart me-2"></i>Commander</button>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-outline-primary w-100" onclick="addToCart()">
+                                        <i class="fas fa-shopping-cart me-2"></i>Ajouter au panier
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="submit" class="add-to-cart-btn w-100">
+                                        <i class="fas fa-credit-card me-2"></i>Commander
+                                    </button>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -635,6 +648,76 @@ try {
     </div>
 
     <?php include 'includes/footer.php'; ?>
+
+    <!-- Modal pour importer les images -->
+    <div class="modal fade" id="importImagesModal" tabindex="-1" aria-labelledby="importImagesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importImagesModalLabel">
+                        <i class="fas fa-images me-2"></i>
+                        Importer les images pour <?= htmlspecialchars($product['name']) ?>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="importImagesForm" enctype="multipart/form-data">
+                        <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                        
+                        <div class="mb-3">
+                            <label for="productImages" class="form-label">Sélectionner les images</label>
+                            <input type="file" class="form-control" id="productImages" name="images[]" multiple accept="image/*" required>
+                            <div class="form-text">Vous pouvez sélectionner plusieurs images à la fois (JPG, PNG, GIF)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Images actuelles du produit</label>
+                            <div class="row" id="currentImages">
+                                <?php if (!empty($productImages)): ?>
+                                    <?php foreach ($productImages as $index => $image): ?>
+                                        <div class="col-md-4 mb-2">
+                                            <div class="card">
+                                                <img src="<?= htmlspecialchars($image['image_url']) ?>" class="card-img-top" alt="Image produit" style="height: 150px; object-fit: cover;">
+                                                <div class="card-body p-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="delete_images[]" value="<?= $image['image_url'] ?>" id="delete_<?= $index ?>">
+                                                        <label class="form-check-label" for="delete_<?= $index ?>">
+                                                            Supprimer
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <div class="col-12">
+                                        <p class="text-muted">Aucune image actuellement</p>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Conseils :</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Utilisez des images de haute qualité (minimum 800x600 pixels)</li>
+                                <li>Formats acceptés : JPG, PNG, GIF</li>
+                                <li>Taille maximale par image : 5 MB</li>
+                                <li>La première image sera l'image principale</li>
+                            </ul>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="uploadImages()">
+                        <i class="fas fa-upload me-2"></i>Importer les images
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -717,6 +800,47 @@ try {
             if (!finalSalePrice || finalSalePrice === '0' || finalSalePrice === '') {
                 finalSalePriceInput.value = <?php echo $product['reseller_price']; ?>;
             }
+        }
+
+        // Fonction pour ouvrir le modal d'importation d'images
+        function importImages() {
+            const modal = new bootstrap.Modal(document.getElementById('importImagesModal'));
+            modal.show();
+        }
+
+        // Fonction pour uploader les images
+        function uploadImages() {
+            const form = document.getElementById('importImagesForm');
+            const formData = new FormData(form);
+            
+            // Afficher un indicateur de chargement
+            const uploadBtn = document.querySelector('#importImagesModal .btn-primary');
+            const originalText = uploadBtn.innerHTML;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Importation en cours...';
+            uploadBtn.disabled = true;
+            
+            fetch('upload_product_images.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Images importées avec succès !');
+                    location.reload(); // Recharger la page pour afficher les nouvelles images
+                } else {
+                    alert('Erreur lors de l\'importation : ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur lors de l\'importation des images');
+            })
+            .finally(() => {
+                uploadBtn.innerHTML = originalText;
+                uploadBtn.disabled = false;
+            });
+        }
             updateAffiliateMargin();
         }
 
@@ -779,6 +903,59 @@ try {
                 return false;
             }
         });
+
+        // Fonction pour ajouter au panier
+        function addToCart() {
+            const quantity = document.getElementById('quantity').value;
+            const productId = <?php echo $product['id']; ?>;
+            
+            // Vérifier si une couleur et une taille sont sélectionnées
+            const selectedColor = document.getElementById('selectedColor').value;
+            const selectedSize = document.getElementById('selectedSize').value;
+            
+            if (!selectedColor) {
+                alert('Veuillez sélectionner une couleur');
+                return;
+            }
+            if (!selectedSize) {
+                alert('Veuillez sélectionner une taille');
+                return;
+            }
+
+            // Afficher un indicateur de chargement
+            const addToCartBtn = document.querySelector('button[onclick="addToCart()"]');
+            const originalText = addToCartBtn.innerHTML;
+            addToCartBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Ajout en cours...';
+            addToCartBtn.disabled = true;
+
+            fetch('add_to_cart.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `product_id=${productId}&quantity=${quantity}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Produit ajouté au panier avec succès !');
+                    // Mettre à jour le nombre d'articles dans le panier
+                    if (typeof updateCartCount === 'function') {
+                        updateCartCount();
+                    }
+                } else {
+                    alert('Erreur : ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur lors de l\'ajout au panier');
+            })
+            .finally(() => {
+                addToCartBtn.innerHTML = originalText;
+                addToCartBtn.disabled = false;
+            });
+        }
     </script>
 </body>
 

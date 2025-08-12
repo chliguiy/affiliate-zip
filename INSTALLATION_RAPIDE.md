@@ -21,7 +21,7 @@ Vous avez plusieurs options pour installer la base de données SCAR AFFILIATE :
 ### 🎯 **Option 3 : Installation via phpMyAdmin**
 
 1. **Ouvrez phpMyAdmin** : `http://localhost/phpmyadmin`
-2. **Créez une base de données** : `scar_affiliate`
+2. **Créez une base de données** : `chic_affiliate`
 3. **Cliquez sur "Importer"**
 4. **Sélectionnez le fichier** : `complete_database.sql`
 5. **Cliquez sur "Exécuter"**
@@ -31,10 +31,10 @@ Vous avez plusieurs options pour installer la base de données SCAR AFFILIATE :
 
 ```bash
 # 1. Créer la base de données
-mysql -u root -p -e "CREATE DATABASE scar_affiliate CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p -e "CREATE DATABASE chic_affiliate CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
 # 2. Importer le fichier SQL
-mysql -u root -p scar_affiliate < complete_database.sql
+mysql -u root -p chic_affiliate < complete_database.sql
 ```
 
 ## 🔧 **Résolution des Problèmes**
@@ -70,7 +70,7 @@ Après l'installation, testez avec :
 ## 🔑 **Informations de Connexion**
 
 ### **Administrateur**
-- **Email** : `admin@scar-affiliate.com`
+- **Email** : `admin@chic-affiliate.com`
 - **Mot de passe** : `password`
 
 ### **Affiliés de Test**

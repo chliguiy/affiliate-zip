@@ -33,17 +33,17 @@ if (!$confirmateur) {
     exit();
 }
 
-// Récupérer les IDs des clients assignés
-$stmt = $conn->prepare("SELECT u.id FROM confirmateur_clients cc JOIN users u ON cc.client_id = u.id WHERE cc.confirmateur_id = ? AND cc.status = 'active'");
+// Statistiques commandes (similaire à dashboard.php)
+$stmt = $conn->prepare("SELECT u.email FROM confirmateur_clients cc JOIN users u ON cc.client_id = u.id WHERE cc.confirmateur_id = ? AND cc.status = 'active'");
 $stmt->execute([$confirmateur_id]);
-$client_ids = array_column($stmt->fetchAll(), 'id');
+$client_emails = array_column($stmt->fetchAll(), 'email');
 
 $nb_nouvelles = $nb_confirmees = $nb_livrees = $nb_refusees = $nb_annulees = $nb_retournees = 0;
-if (count($client_ids) > 0) {
-    $in = str_repeat('?,', count($client_ids) - 1) . '?';
-    $sql = "SELECT status, COUNT(*) as nb FROM orders WHERE affiliate_id IN ($in) GROUP BY status";
+if (count($client_emails) > 0) {
+    $in = str_repeat('?,', count($client_emails) - 1) . '?';
+    $sql = "SELECT status, COUNT(*) as nb FROM orders WHERE customer_email IN ($in) GROUP BY status";
     $stmt = $conn->prepare($sql);
-    $stmt->execute($client_ids);
+    $stmt->execute($client_emails);
     $stats = [];
     foreach ($stmt->fetchAll() as $row) {
         $stats[$row['status']] = $row['nb'];

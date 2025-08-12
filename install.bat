@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo Installation de CHIC AFFILIATE
+echo Installation de SCAR AFFILIATE
 echo ========================================
 echo.
 

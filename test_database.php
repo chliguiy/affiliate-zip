@@ -105,7 +105,7 @@ try {
     // Test 6: Test de connexion administrateur
     echo "<h2>6. Test de Connexion Administrateur</h2>";
     $stmt = $conn->prepare("SELECT * FROM admins WHERE email = ?");
-    $stmt->execute(['admintest@chic-affiliate.com']);
+    $stmt->execute(['admin@chic-affiliate.com']);
     $admin = $stmt->fetch();
     
     if ($admin) {

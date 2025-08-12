@@ -99,6 +99,11 @@ $quick_stats = $stmt->fetch(PDO::FETCH_ASSOC);
                 margin-left: 0;
                 padding: 0 1rem 0;
             }
+            
+            [style*="margin-left: 265px"] {
+                margin-left: 0 !important;
+                padding: 15px !important;
+            }
         }
 
         .glass-card {
@@ -132,7 +137,7 @@ $quick_stats = $stmt->fetch(PDO::FETCH_ASSOC);
             background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
         }
 
-        .stats-icon {
+        .stats-icon {image.pngimage.png
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -459,7 +464,7 @@ $quick_stats = $stmt->fetch(PDO::FETCH_ASSOC);
 <?php include 'includes/sidebar.php'; ?>
 
     <!-- Main Content -->
-    <div class="main-content">
+    <div class="main-content" style="margin-left: 265px;">
         <!-- Welcome Section -->
         <div class="welcome-section animate-fade-in">
             <h1 class="welcome-title">

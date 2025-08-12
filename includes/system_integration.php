@@ -50,12 +50,11 @@ class SystemIntegration {
                 $total_amount += $product['price'] * $product['quantity'];
             }
             
-            // Calcul professionnel de la marge affilié pour 1 produit (cohérent avec le frontend)
+            // Calcul professionnel de la marge affilié (cohérent avec le frontend)
             $final_sale_price = isset($_POST['final_sale_price']) ? floatval($_POST['final_sale_price']) : 0;
             $delivery_fee = isset($_POST['delivery_fee']) ? floatval($_POST['delivery_fee']) : 0;
-            $quantity = isset($products[0]['quantity']) ? (int)$products[0]['quantity'] : 1;
-            $admin_cost = $products[0]['price'] * $quantity;
-            $affiliate_margin = $final_sale_price - $admin_cost - $delivery_fee;
+            // Utiliser le total_amount qui inclut TOUS les produits (cohérent avec le frontend)
+            $affiliate_margin = $final_sale_price - $total_amount - $delivery_fee;
             
             // La commission est maintenant égale à la marge affiliée
             $commission_total = $affiliate_margin;
@@ -107,7 +106,7 @@ class SystemIntegration {
                 $affiliate_id, 
                 $confirmateur_id,
                 $customer_name, 
-                $client_data['email'],
+                '', // Email vide
                 $client_data['phone'], 
                 $client_data['address'], 
                 $client_data['city'],
@@ -313,13 +312,13 @@ class SystemIntegration {
                 $subject = "Votre compte affilié a été activé !";
                 $message = "<html><head><title>Activation de votre compte affilié</title></head><body>";
                 $message .= "<h2>Bonjour " . htmlspecialchars($affiliate['full_name']) . ",</h2>";
-                $message .= "<p>Votre compte affilié sur CHIC AFFILIATE a été <b>activé</b> par l'administrateur.</p>";
+                $message .= "<p>Votre compte affilié sur SCAR AFFILIATE a été <b>activé</b> par l'administrateur.</p>";
                 $message .= "<p>Vous pouvez maintenant vous connecter et commencer à utiliser la plateforme.</p>";
-                $message .= "<br><p>Merci et bienvenue !<br>L'équipe CHIC AFFILIATE</p>";
+                $message .= "<br><p>Merci et bienvenue !<br>L'équipe SCAR AFFILIATE</p>";
                 $message .= "</body></html>";
                 $headers = "MIME-Version: 1.0" . "\r\n";
                 $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-                $headers .= 'From: CHIC AFFILIATE <hamzamouttaki58@gmail.com>' . "\r\n";
+                $headers .= 'From: SCAR AFFILIATE <hamzamouttaki58@gmail.com>' . "\r\n";
                 @mail($to, $subject, $message, $headers);
             }
             
@@ -391,11 +390,11 @@ class SystemIntegration {
      */
     private function getOrCreateClient($client_data) {
         try {
-            // Vérifier si le client existe déjà
+            // Vérifier si le client existe déjà (basé sur le nom et téléphone)
             $stmt = $this->pdo->prepare("
-                SELECT id FROM users WHERE email = ? AND type = 'customer'
+                SELECT id FROM users WHERE phone = ? AND type = 'customer'
             ");
-            $stmt->execute([$client_data['email']]);
+            $stmt->execute([$client_data['phone']]);
             $existing_client = $stmt->fetch();
             
             if ($existing_client) {
@@ -418,6 +417,10 @@ class SystemIntegration {
                     break;
                 }
             }
+            
+            // Créer un email temporaire basé sur le nom et téléphone
+            $temp_email = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $client_data['name'])) . '@' . substr($client_data['phone'], -4) . '.temp';
+            
             // Créer un nouveau client
             $stmt = $this->pdo->prepare("
                 INSERT INTO users (username, email, phone, city, type, status, created_at)
@@ -425,7 +428,7 @@ class SystemIntegration {
             ");
             $stmt->execute([
                 $unique_username,
-                $client_data['email'],
+                $temp_email,
                 $client_data['phone'],
                 $client_data['city']
             ]);
@@ -441,10 +444,106 @@ class SystemIntegration {
     }
     
     /**
-     * Générer un numéro de commande unique
+     * Méthode publique pour générer un numéro de commande
+     */
+    public function generateOrderNumberPublic() {
+        return $this->generateOrderNumber();
+    }
+    
+    /**
+     * Générer un numéro de commande unique et séquentiel
+     * Format: CMD-YYYY-NNNNNN (ex: CMD-2024-000001)
      */
     private function generateOrderNumber() {
-        return 'ORD-' . date('Ymd') . '-' . rand(1000, 9999);
+        try {
+            $current_year = date('Y');
+            
+            // Vérifier si la table des compteurs existe, sinon la créer
+            $this->createOrderCounterTableIfNotExists();
+            
+            // Vérifier si une transaction est déjà en cours
+            $transaction_started = false;
+            if (!$this->pdo->inTransaction()) {
+                $this->pdo->beginTransaction();
+                $transaction_started = true;
+            }
+            
+            // Récupérer ou créer le compteur pour l'année courante
+            $stmt = $this->pdo->prepare("
+                SELECT counter_value 
+                FROM order_counters 
+                WHERE year = ? 
+                FOR UPDATE
+            ");
+            $stmt->execute([$current_year]);
+            $counter_row = $stmt->fetch();
+            
+            if ($counter_row) {
+                // Incrémenter le compteur existant
+                $new_counter = $counter_row['counter_value'] + 1;
+                $stmt = $this->pdo->prepare("
+                    UPDATE order_counters 
+                    SET counter_value = ?, updated_at = NOW() 
+                    WHERE year = ?
+                ");
+                $stmt->execute([$new_counter, $current_year]);
+            } else {
+                // Créer un nouveau compteur pour cette année
+                $new_counter = 1;
+                $stmt = $this->pdo->prepare("
+                    INSERT INTO order_counters (year, counter_value, created_at, updated_at) 
+                    VALUES (?, ?, NOW(), NOW())
+                ");
+                $stmt->execute([$current_year, $new_counter]);
+            }
+            
+            // Générer le numéro de commande
+            $order_number = sprintf('CMD-%s-%06d', $current_year, $new_counter);
+            
+            // Vérifier l'unicité (sécurité supplémentaire)
+            $stmt = $this->pdo->prepare("SELECT id FROM orders WHERE order_number = ?");
+            $stmt->execute([$order_number]);
+            if ($stmt->fetch()) {
+                // En cas de collision (très improbable), essayer avec un suffixe
+                $order_number = sprintf('CMD-%s-%06d-R', $current_year, $new_counter);
+            }
+            
+            // Valider la transaction seulement si nous l'avons commencée
+            if ($transaction_started) {
+                $this->pdo->commit();
+            }
+            
+            return $order_number;
+            
+        } catch (Exception $e) {
+            // Annuler la transaction seulement si nous l'avons commencée
+            if (isset($transaction_started) && $transaction_started && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            error_log("Erreur lors de la génération du numéro de commande: " . $e->getMessage());
+            // Fallback vers l'ancien système en cas d'erreur
+            return 'CMD-' . date('Ymd') . '-' . str_pad(rand(1, 999999), 6, '0', STR_PAD_LEFT);
+        }
+    }
+    
+    /**
+     * Créer la table des compteurs de commandes si elle n'existe pas
+     */
+    private function createOrderCounterTableIfNotExists() {
+        try {
+            $this->pdo->exec("
+                CREATE TABLE IF NOT EXISTS order_counters (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    year INT NOT NULL UNIQUE,
+                    counter_value INT NOT NULL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    KEY idx_year (year)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+        } catch (Exception $e) {
+            error_log("Erreur lors de la création de la table order_counters: " . $e->getMessage());
+        }
     }
     
     /**

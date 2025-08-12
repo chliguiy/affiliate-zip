@@ -29,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Récupérer les données du formulaire
         $customer_name = trim($_POST['customer_name'] ?? '');
-        $customer_email = trim($_POST['customer_email'] ?? '');
         $customer_phone = trim($_POST['customer_phone'] ?? '');
         $customer_address = trim($_POST['customer_address'] ?? '');
         $customer_city = trim($_POST['customer_city'] ?? '');
@@ -38,11 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $comment = trim($_POST['comment'] ?? '');
         
         // Debug: Afficher les données traitées
-        error_log("Données traitées - Nom: $customer_name, Email: $customer_email, Affilié: $affiliate_id");
+        error_log("Données traitées - Nom: $customer_name, Affilié: $affiliate_id");
         error_log("Produits reçus: " . print_r($products, true));
         
         // Validation des données
-        if (empty($customer_name) || empty($customer_email) || empty($customer_phone) || empty($customer_address) || empty($customer_city)) {
+        if (empty($customer_name) || empty($customer_phone) || empty($customer_address) || empty($customer_city)) {
             throw new Exception('Tous les champs sont obligatoires.');
         }
         
@@ -53,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Préparer les données client
         $client_data = [
             'name' => $customer_name,
-            'email' => $customer_email,
             'phone' => $customer_phone,
             'address' => $customer_address,
             'city' => $customer_city,

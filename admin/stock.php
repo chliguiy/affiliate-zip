@@ -40,40 +40,37 @@ $products = $stmt->fetchAll();
     </style>
 </head>
 <body>
-    <?php include 'includes/sidebar.php'; ?>
-    <div class="admin-content">
-        <h1>Gestion du Stock</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Produit</th>
-                    <th>Stock</th>
-                    <th>Min</th>
-                    <th>Max</th>
-                    <th>Point de réappro</th>
-                    <th>Statut</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($products as $p): ?>
-                <tr>
-                    <td><?= htmlspecialchars($p['name']) ?></td>
-                    <td class="<?= $p['stock'] <= $p['reorder_point'] ? 'low-stock' : '' ?><?= $p['status'] === 'out_of_stock' ? ' out-of-stock' : '' ?>">
-                        <?= $p['stock'] ?>
-                    </td>
-                    <td><?= $p['min_stock_level'] ?></td>
-                    <td><?= $p['max_stock_level'] ?></td>
-                    <td><?= $p['reorder_point'] ?></td>
-                    <td><?= htmlspecialchars($p['status']) ?></td>
-                    <td class="actions">
-                        <a href="stock_adjust.php?product_id=<?= $p['id'] ?>">Ajuster</a>
-                        <a href="stock_history.php?product_id=<?= $p['id'] ?>">Historique</a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
+    <h1>Gestion du Stock</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Stock</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Point de réappro</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($products as $p): ?>
+            <tr>
+                <td><?= htmlspecialchars($p['name']) ?></td>
+                <td class="<?= $p['stock'] <= $p['reorder_point'] ? 'low-stock' : '' ?><?= $p['status'] === 'out_of_stock' ? ' out-of-stock' : '' ?>">
+                    <?= $p['stock'] ?>
+                </td>
+                <td><?= $p['min_stock_level'] ?></td>
+                <td><?= $p['max_stock_level'] ?></td>
+                <td><?= $p['reorder_point'] ?></td>
+                <td><?= htmlspecialchars($p['status']) ?></td>
+                <td class="actions">
+                    <a href="stock_adjust.php?product_id=<?= $p['id'] ?>">Ajuster</a>
+                    <a href="stock_history.php?product_id=<?= $p['id'] ?>">Historique</a>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
 </body>
 </html> 

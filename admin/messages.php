@@ -136,7 +136,7 @@ try {
 </head>
 <body>
     <?php include 'includes/sidebar.php'; ?>
-    <div class="admin-content">
+    <div class="container-fluid" style="margin-left:265px; min-height:100vh;">
         <div class="messages-container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="mb-0"><i class="fas fa-envelope me-2"></i>Messages</h3>

@@ -99,7 +99,6 @@ try {
     // Test avec des données fictives
     $test_client_data = [
         'name' => 'Test Client',
-        'email' => 'test@example.com',
         'phone' => '0612345678',
         'address' => '123 Rue Test',
         'city' => 'Casablanca'
@@ -131,7 +130,6 @@ echo "<h2>7. Formulaire de test de commande</h2>";
 echo "<form method='post' action='process_order.php'>";
 echo "<h3>Données client</h3>";
 echo "Nom: <input type='text' name='customer_name' value='Test Client' required><br>";
-echo "Email: <input type='email' name='customer_email' value='test@example.com' required><br>";
 echo "Téléphone: <input type='text' name='customer_phone' value='0612345678' required><br>";
 echo "Adresse: <input type='text' name='customer_address' value='123 Rue Test' required><br>";
 echo "Ville: <input type='text' name='customer_city' value='Casablanca' required><br>";

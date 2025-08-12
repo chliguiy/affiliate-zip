@@ -1,5 +1,5 @@
 -- =====================================================
--- BASE DE DONNÉES COMPLÈTE - CHIC AFFILIATE
+-- BASE DE DONNÉES COMPLÈTE - SCAR AFFILIATE
 -- =====================================================
 
 -- Création de la base de données
@@ -661,7 +661,7 @@ DO DELETE FROM password_resets WHERE expires_at < NOW();
 -- =====================================================
 
 -- Message de confirmation
-SELECT 'Base de données CHIC AFFILIATE créée avec succès !' as message;
+SELECT 'Base de données SCAR AFFILIATE créée avec succès !' as message;
 SELECT COUNT(*) as total_tables FROM information_schema.tables WHERE table_schema = 'chic_affiliate';
 SELECT 'Données insérées avec succès' as status;
 

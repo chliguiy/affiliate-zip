@@ -549,7 +549,7 @@ require_once 'config/database.php';
     <!-- Why Choose Us Section -->
     <section class="why-choose-us py-5">
         <div class="container">
-            <h2 class="text-center mb-5" data-aos="fade-up">لماذا تختار سكار أفلييت؟</h2>
+            <h2 class="text-center mb-5" data-aos="fade-up">لماذا تختار شيك أفلييت؟</h2>
             <div class="row g-4">
                 <div class="col-md-3" data-aos="fade-up" data-aos-delay="0">
                     <div class="card h-100 border-0 shadow-sm">
@@ -825,7 +825,7 @@ require_once 'config/database.php';
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <h5>سكار أفلييت</h5>
+                    <h5>شيك أفلييت</h5>
                     <p>منصة التسويق الأفضل في المغرب</p>
                 </div>
                 <div class="col-md-4">

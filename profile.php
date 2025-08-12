@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         }
 
         .main-content {
-            margin-left: 280px;
+            margin-left: 265px;
             padding: 0 1rem 0;
             min-height: 100vh;
         }
@@ -335,7 +335,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                 <i class="fas fa-user"></i>
             </div>
             <h1 class="profile-name"><?php echo htmlspecialchars($user['full_name'] ?? $user['username']); ?></h1>
-            <p class="profile-role">Affilié SCAR AFFILIATE</p>
+                                    <p class="profile-role">Affilié SCAR AFFILIATE</p>
             <div class="d-flex justify-content-center gap-2">
                 <span class="badge bg-primary"><?php echo htmlspecialchars($user['status']); ?></span>
                 <span class="badge bg-secondary">ID: <?php echo htmlspecialchars($user['id']); ?></span>

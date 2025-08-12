@@ -71,7 +71,7 @@ if (!$user) {
         }
 
         .main-content {
-            margin-left: 280px;
+            margin-left: 265px;
             padding: 0 1rem 0;
         }
 

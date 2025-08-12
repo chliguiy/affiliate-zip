@@ -77,7 +77,7 @@ $categories = $stmt->fetchAll();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .content-wrapper {
-            margin-left: 280px;
+            margin-left: 265px;
             padding: 2rem;
         }
         .action-buttons {
@@ -87,7 +87,8 @@ $categories = $stmt->fetchAll();
 </head>
 <body>
     <?php include 'includes/sidebar.php'; ?>
-    <div class="admin-content">
+
+    <div class="content-wrapper">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Gestion des catégories</h1>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">

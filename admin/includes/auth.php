@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Vérifier si l'utilisateur est connecté en tant qu'admin
 if (!isset($_SESSION['admin_id'])) {
-    header('Location: index.php');
+    header('Location: ../login.php');
     exit;
 }
 
@@ -21,7 +21,7 @@ $admin = $stmt->fetch();
 
 if (!$admin) {
     session_destroy();
-    header('Location: index.php');
+    header('Location: ../login.php');
     exit();
 }
 

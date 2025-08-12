@@ -51,7 +51,7 @@ $confirmateurs = $stmt->fetchAll();
     <div class="container-fluid">
         <div class="row">
             <?php include 'includes/sidebar.php'; ?>
-            <div class="admin-content p-4">
+            <div class="col-md-9 col-lg-10 p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1 class="h3">Liste des confirmateurs</h1>
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addConfirmateurModal"><i class="fas fa-user-plus"></i> Ajouter un confirmateur</button>

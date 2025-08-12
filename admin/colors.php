@@ -92,8 +92,13 @@ $colors = $conn->query("SELECT * FROM colors ORDER BY name")->fetchAll();
     </style>
 </head>
 <body>
-    <?php include 'includes/sidebar.php'; ?>
-    <div class="admin-content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <?php include 'includes/sidebar.php'; ?>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 p-4">
                 <?php if (isset($_SESSION['success_message'])): ?>
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         <?php 

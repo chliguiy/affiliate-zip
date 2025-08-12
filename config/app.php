@@ -62,7 +62,7 @@ class AppConfig {
     }
     
     // Configuration des constantes
-    const APP_NAME = 'CHIC AFFILIATE';
+    const APP_NAME = 'SCAR AFFILIATE';
     const APP_VERSION = '1.0.0';
     const COMMISSION_RATE = 0.10; // 10%
     const SHIPPING_COST_CASABLANCA = 23;

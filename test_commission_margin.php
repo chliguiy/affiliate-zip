@@ -1,6 +1,10 @@
 <?php
 require_once 'config/database.php';
 
+// Créer une instance de la base de données
+$database = new Database();
+$conn = $database->getConnection();
+
 echo "=== Test de la logique de commission = marge affiliée ===\n\n";
 
 // Récupérer une commande récente pour tester

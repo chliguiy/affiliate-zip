@@ -62,12 +62,12 @@ SCAR AFFILIATE est une plateforme complète de marketing d'affiliation développ
 
 1. **Créez la base de données** :
 ```sql
-CREATE DATABASE scar_affiliate CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE chic_affiliate CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 2. **Importez le fichier SQL** :
 ```bash
-mysql -u root -p scar_affiliate < complete_database.sql
+mysql -u root -p chic_affiliate < complete_database.sql
 ```
 
 3. **Configurez la connexion** dans `config/database.php`
@@ -83,7 +83,7 @@ chmod 755 uploads logs
 ### Informations de Connexion par Défaut
 
 **Administrateur :**
-- Email : `admin@scar-affiliate.com`
+- Email : `admin@chic-affiliate.com`
 - Mot de passe : `password`
 
 **Utilisateurs de Test :**
@@ -97,7 +97,7 @@ Modifiez le fichier `config/database.php` :
 
 ```php
 private $host = "localhost";
-private $db_name = "scar_affiliate";
+private $db_name = "chic_affiliate";
 private $username = "root";
 private $password = "";
 ```
@@ -109,7 +109,7 @@ Pour activer l'envoi d'emails, configurez votre serveur SMTP dans les fichiers c
 ## 📁 Structure des Fichiers
 
 ```
-scar-affiliate/
+chic-affiliate/
 ├── admin/                 # Interface d'administration
 ├── affiliate/            # Interface des affiliés
 ├── api/                  # API REST
@@ -186,13 +186,56 @@ scar-affiliate/
 - **product_stats** : Statistiques des produits
 - **claim_stats** : Statistiques des réclamations
 
+## 💰 Système de Paiements
+
+### Fonctionnalités Avancées
+
+Le système de paiements a été amélioré pour offrir une meilleure gestion des commissions d'affiliation :
+
+#### ✅ Paiements Visibles Après Règlement
+- **Problème résolu** : Les paiements disparaissaient de la liste après règlement
+- **Solution** : Nouvelle table `affiliate_payments` pour conserver l'historique
+- **Résultat** : Les paiements restent visibles avec le statut "Payé"
+
+#### 🔄 Préservation du Statut des Commandes
+- **Exigence** : Le statut des commandes doit rester 'delivered' même après paiement
+- **Implémentation** : Utilisation du champ `commission_paid_at` pour tracer les paiements
+- **Avantage** : Séparation claire entre le statut métier et le statut de paiement
+
+#### 📊 Architecture Technique
+- **Table `affiliate_payments`** : Stockage des paiements réglés
+- **Champ `commission_paid_at`** : Horodatage du paiement de commission
+- **Requête `UNION ALL`** : Combinaison des paiements en attente et réglés
+- **Filtrage intelligent** : Possibilité de filtrer par statut de paiement
+
+#### 🛠️ Scripts Utilitaires
+- **`ensure_affiliate_payments_table.php`** : Vérification et création de la table
+- **`test_payment_system.php`** : Test complet du système de paiements
+- **Interface améliorée** : Messages informatifs et boutons de vérification
+
+### Utilisation
+
+1. **Accédez aux paiements** : `admin/payments_received.php`
+2. **Filtrez par statut** : "En Attente" ou "Payé"
+3. **Réglez les paiements** : Bouton "Regler" pour chaque affilié
+4. **Vérifiez la base** : Bouton "Vérifier Base" pour diagnostics
+5. **Testez le système** : Bouton "Test Système" pour validation
+
+### Avantages
+
+- ✅ **Transparence totale** : Tous les paiements restent visibles
+- ✅ **Traçabilité complète** : Historique détaillé des règlements
+- ✅ **Flexibilité** : Filtrage et export des données
+- ✅ **Fiabilité** : Tests automatisés et vérifications
+- ✅ **Séparation des préoccupations** : Statut métier indépendant du paiement
+
 ## 🛠️ Maintenance
 
 ### Sauvegarde
 
 ```bash
 # Sauvegarde de la base de données
-mysqldump -u root -p scar_affiliate > backup_$(date +%Y%m%d).sql
+mysqldump -u root -p chic_affiliate > backup_$(date +%Y%m%d).sql
 ```
 
 ### Logs

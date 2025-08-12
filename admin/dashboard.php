@@ -9,7 +9,7 @@ require_once 'includes/AdminPermissions.php';
 
 // Vérification de l'authentification et du rôle
 if (!isset($_SESSION['admin_id'])) {
-    header('Location: index.php');
+    header('Location: ../login.php');
     exit;
 }
 
@@ -188,7 +188,7 @@ $produitsStockFaible = $pdo->query("SELECT name, stock, reorder_point FROM produ
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de bord Admin - Scar Affiliate</title>
+            <title>Tableau de bord Admin - Scar Affiliate</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -222,15 +222,48 @@ $produitsStockFaible = $pdo->query("SELECT name, stock, reorder_point FROM produ
         }
         .status-new { background-color: #ffc107; color: #000; }
         .status-confirmed { background-color: #28a745; color: #fff; }
-        .status-shipping { background-color: #17a2b8; cimage.pngolor: #fff; }
+        .status-shipping { background-color: #17a2b8; color: #fff; }
         .status-delivered { background-color: #28a745; color: #fff; }
         .status-cancelled { background-color: #dc3545; color: #fff; }
+        
+        /* Styles pour le contenu compact */
+        .col-md-9, .col-lg-10 {
+            font-size: 0.9rem;
+        }
+        
+        .col-md-9 h1, .col-lg-10 h1,
+        .col-md-9 h2, .col-lg-10 h2,
+        .col-md-9 h3, .col-lg-10 h3 {
+            font-size: 1.1rem;
+        }
+        
+        .card-body {
+            padding: 0.8rem;
+        }
+        
+        .table td, .table th {
+            padding: 0.4rem;
+            font-size: 0.85rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            [style*="margin-left: 265px"] {
+                margin-left: 0 !important;
+                padding: 15px !important;
+            }
+        }
     </style>
 </head>
 <body>
-    <?php include 'includes/sidebar.php'; ?>
-    <div class="admin-content">
-        <h2 class="mb-4">Tableau de bord administrateur</h2>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <?php include 'includes/sidebar.php'; ?>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 p-4" style="margin-left: 265px;">
+                <h2 class="mb-4">Tableau de bord administrateur</h2>
 
                 <!-- Statistics Cards -->
                 <div class="row mb-4">

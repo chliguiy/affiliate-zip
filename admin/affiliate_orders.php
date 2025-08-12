@@ -151,8 +151,13 @@ foreach ($affiliates as $affiliate) {
     </style>
 </head>
 <body>
-    <?php include 'includes/sidebar.php'; ?>
-    <div class="admin-content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <?php include 'includes/sidebar.php'; ?>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 p-4">
                 <h2 class="mb-4 fw-bold">Affiliés et leurs Commandes</h2>
                 <div class="row g-4">
                     <?php foreach ($affiliates as $affiliate): ?>

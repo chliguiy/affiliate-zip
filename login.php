@@ -24,6 +24,11 @@ if (isset($_SESSION['confirmateur_id'])) {
     exit();
 }
 
+if (isset($_SESSION['admin_id'])) {
+    header('Location: admin/dashboard.php');
+    exit();
+}
+
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -34,7 +39,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
     
     try {
-        // 1. Vérifier d'abord dans la table users (clients, affiliés, admins)
+        // 1. Vérifier d'abord dans la table admins
+        $stmt = $conn->prepare("SELECT * FROM admins WHERE email = ?");
+        $stmt->execute([$email]);
+        $admin = $stmt->fetch();
+        
+        if ($admin && password_verify($password, $admin['password'])) {
+            $_SESSION['admin_id'] = $admin['id'];
+            $_SESSION['admin_name'] = $admin['name'];
+            $_SESSION['success'] = "Connexion admin réussie !";
+            header('Location: admin/dashboard.php');
+            exit();
+        }
+        
+        // 2. Vérifier dans la table users (clients, affiliés)
         $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
@@ -55,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = "Votre compte est en attente d'activation.";
             }
         } else {
-            // 2. Si pas trouvé dans users, vérifier dans la table equipe (confirmateurs)
+            // 3. Si pas trouvé dans users, vérifier dans la table equipe (confirmateurs)
             $stmt = $conn->prepare("SELECT * FROM equipe WHERE email = ? AND role = 'confirmateur'");
             $stmt->execute([$email]);
             $confirmateur = $stmt->fetch();
@@ -80,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - SCAR AFFILIATE</title>
+    <title>Connexion Unifiée - SCAR AFFILIATE</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -229,8 +247,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="login-container">
             <div class="card">
                 <div class="text-center mb-4">
-                    <img src="./assets/images/logo.png" alt="SCAR AFFILIATE" class="logo">
-                    <h2>Connexion</h2>
+                    <img src="assets/images/logo.png" alt="SCAR AFFILIATE" class="logo">
+                    <h2>Connexion Unifiée</h2>
+                    <p class="text-muted">Admins • Affiliés • Confirmateurs</p>
+                    <small class="text-info">
+                        <i class="fas fa-info-circle"></i> 
+                        Utilisez vos identifiants pour accéder à votre interface
+                    </small>
                 </div>
 
                 <?php if (isset($_SESSION['success'])): ?>

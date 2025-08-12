@@ -121,7 +121,7 @@ $order_items = $stmt->fetchAll();
                             <div class="col-md-6">
                                 <h5><i class="fas fa-user me-2"></i>Informations client</h5>
                                 <p><strong>Nom:</strong> <?php echo htmlspecialchars($order['customer_name']); ?></p>
-                                <p><strong>Email:</strong> <?php echo htmlspecialchars($order['customer_email']); ?></p>
+                                <!-- Email supprimé du processus de commande -->
                                 <p><strong>Téléphone:</strong> <?php echo htmlspecialchars($order['customer_phone']); ?></p>
                                 <p><strong>Adresse:</strong> <?php echo htmlspecialchars($order['customer_address']); ?>, <?php echo htmlspecialchars($order['customer_city']); ?>
 <?php if (!empty($order['notes'])): ?>

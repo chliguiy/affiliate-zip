@@ -40,6 +40,7 @@ $sort = $_GET['sort'] ?? 'name_asc';
 // Construction de la requête simplifiée
 $query = "
     SELECT p.*, c.name as category_name,
+           COALESCE(p.sale_price, p.seller_price) as display_price,
            (SELECT image_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, sort_order ASC, id ASC LIMIT 1) as main_image_url,
            COUNT(DISTINCT o.id) as total_orders
     FROM products p
@@ -67,10 +68,10 @@ $query .= " GROUP BY p.id";
 // Gestion du tri
 switch ($sort) {
     case 'price_asc':
-        $query .= " ORDER BY p.reseller_price ASC";
+        $query .= " ORDER BY COALESCE(p.sale_price, p.seller_price) ASC";
         break;
     case 'price_desc':
-        $query .= " ORDER BY p.reseller_price DESC";
+        $query .= " ORDER BY COALESCE(p.sale_price, p.seller_price) DESC";
         break;
     case 'popularity':
         $query .= " ORDER BY total_orders DESC";
@@ -171,6 +172,89 @@ $products = $stmt->fetchAll();
             background: #1976d2;
             color: #fff;
         }
+        .product-card {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            overflow: hidden;
+            background: white;
+            padding: 0;
+            min-width: 350px;
+        }
+        .modal.show .modal-dialog {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) !important;
+            margin: 0;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-body {
+            padding: 1.25rem;
+            background: white;
+        }
+        .modal-actions {
+            display: flex;
+            flex-direction: row;
+            gap: 0.75rem;
+            justify-content: center;
+            width: 100%;
+        }
+        .btn-modal {
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            justify-content: center;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .btn-modal-details {
+            background: #1976d2;
+            color: #fff;
+            border: none;
+        }
+        .btn-modal-details:hover {
+            background: #1565c0;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .btn-modal-cart {
+            background: #28a745;
+            color: #fff;
+        }
+        .btn-modal-cart:hover {
+            background: #218838;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .btn-modal-cart.loading {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .btn-modal-cart.loading:hover {
+            transform: none;
+            box-shadow: none;
+        }
         @media (max-width: 1200px) {
             .products-container { gap: 1.2rem; }
             .product-card { width: 220px; }
@@ -230,20 +314,37 @@ $products = $stmt->fetchAll();
                 <?php else: ?>
                 <div class="products-container">
                     <?php foreach ($products as $product): ?>
-                    <div class="product-card">
-                        <a href="product_details.php?id=<?php echo htmlspecialchars($product['id']); ?>">
-                            <img src="<?php echo htmlspecialchars($product['main_image_url']); ?>" class="product-image" alt="<?php echo htmlspecialchars($product['name']); ?>">
-                        </a>
+                    <div class="product-card" onclick="openProductModal(<?php echo $product['id']; ?>)">
+                        <img src="<?php echo htmlspecialchars($product['main_image_url']); ?>" class="product-image" alt="<?php echo htmlspecialchars($product['name']); ?>">
                         <div class="product-info">
                             <div class="product-title"><?php echo htmlspecialchars($product['name']); ?></div>
                             <div class="product-desc"><?php echo htmlspecialchars(substr($product['description'], 0, 70)); ?>...</div>
-                            <div class="product-price"><?php echo number_format($product['seller_price'] ?? 0, 2); ?> MAD</div>
-                            <a href="product_details.php?id=<?php echo htmlspecialchars($product['id']); ?>" class="btn-details">Voir détails</a>
+                            <div class="product-price"><?php echo number_format($product['display_price'] ?? 0, 2); ?> MAD</div>
                         </div>
                     </div>
                     <?php endforeach; ?>
                 </div>
                 <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal unique pour les produits -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 400px; margin: 0 auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modal-actions">
+                        <a id="modalDetailsLink" href="#" class="btn-modal btn-modal-details">
+                            <i class="fas fa-eye"></i>
+                            Voir détails
+                        </a>
+                        <button id="modalAddToCartBtn" type="button" class="btn-modal btn-modal-cart">
+                            <i class="fas fa-shopping-cart"></i>
+                            Ajouter au panier
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -255,6 +356,83 @@ $products = $stmt->fetchAll();
         document.querySelectorAll('select[name="category"], select[name="sort"]').forEach(select => {
             select.addEventListener('change', () => {
                 select.closest('form').submit();
+            });
+        });
+
+        // Variable globale pour stocker les données du produit actuel
+        let currentProduct = null;
+
+        // Fonction pour ouvrir le modal avec les données du produit
+        function openProductModal(productId) {
+            // Mettre à jour le modal
+            document.getElementById('modalDetailsLink').href = `product_details.php?id=${productId}`;
+            document.getElementById('modalAddToCartBtn').setAttribute('data-product-id', productId);
+
+            // Ouvrir le modal
+            const modal = new bootstrap.Modal(document.getElementById('productModal'));
+            modal.show();
+        }
+
+        // Fonction pour ajouter au panier
+        function addToCart(productId, quantity = 1) {
+            const button = document.getElementById('modalAddToCartBtn');
+            const originalText = button.innerHTML;
+            
+            // Afficher l'état de chargement
+            button.classList.add('loading');
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ajout en cours...';
+            button.disabled = true;
+
+            fetch('add_to_cart.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `product_id=${productId}&quantity=${quantity}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Succès - changer le texte temporairement
+                    button.innerHTML = '<i class="fas fa-check"></i> Ajouté !';
+                    button.style.background = '#28a745';
+                    
+                    // Mettre à jour le nombre d'articles dans le panier
+                    if (typeof updateCartCount === 'function') {
+                        updateCartCount();
+                    }
+                    
+                    // Revenir à l'état normal après 2 secondes
+                    setTimeout(() => {
+                        button.classList.remove('loading');
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                        button.disabled = false;
+                    }, 2000);
+                } else {
+                    // Erreur
+                    alert('Erreur : ' + data.message);
+                    button.classList.remove('loading');
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur lors de l\'ajout au panier');
+                button.classList.remove('loading');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+
+        // Ajouter l'événement click au bouton d'ajout au panier dans le modal
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('modalAddToCartBtn').addEventListener('click', function() {
+                const productId = this.getAttribute('data-product-id');
+                if (productId) {
+                    addToCart(productId, 1);
+                }
             });
         });
     </script>
